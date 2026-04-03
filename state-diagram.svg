@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700" style="font-family: monospace">
+  <rect width="900" height="700" fill="#05080f"/>
+
+  <!-- Title -->
+  <text x="450" y="40" fill="#7fffff" font-size="20" font-weight="bold" text-anchor="middle" letter-spacing="4">LUMI — STATE TRANSITION DIAGRAM</text>
+  <text x="450" y="60" fill="rgba(127,255,255,0.5)" font-size="11" text-anchor="middle">AY26 Assignment 2: Algorithmic Agent | NUS Design Platforms C</text>
+
+  <!-- State nodes -->
+  <!-- DORMANT -->
+  <ellipse cx="450" cy="140" rx="80" ry="35" fill="rgba(0,180,180,0.15)" stroke="#00b4b4" stroke-width="2"/>
+  <text x="450" y="136" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold">DORMANT</text>
+  <text x="450" y="152" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: calm | energy: low</text>
+
+  <!-- AWARE -->
+  <ellipse cx="450" cy="260" rx="80" ry="35" fill="rgba(0,160,220,0.15)" stroke="#00a0dc" stroke-width="2"/>
+  <text x="450" y="256" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold">AWARE</text>
+  <text x="450" y="272" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: calm | eyes open</text>
+
+  <!-- CURIOUS -->
+  <ellipse cx="450" cy="380" rx="80" ry="35" fill="rgba(0,140,255,0.15)" stroke="#008cff" stroke-width="2"/>
+  <text x="450" y="376" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold">CURIOUS</text>
+  <text x="450" y="392" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: curious | tentacles out</text>
+
+  <!-- EXCITED -->
+  <ellipse cx="250" cy="510" rx="80" ry="35" fill="rgba(0,200,120,0.15)" stroke="#00c878" stroke-width="2"/>
+  <text x="250" y="506" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold">EXCITED</text>
+  <text x="250" y="522" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: excited | particles</text>
+
+  <!-- STARTLED -->
+  <ellipse cx="650" cy="510" rx="80" ry="35" fill="rgba(180,0,200,0.15)" stroke="#b400c8" stroke-width="2"/>
+  <text x="650" y="506" fill="#df7fff" font-size="13" text-anchor="middle" font-weight="bold">STARTLED</text>
+  <text x="650" y="522" fill="rgba(200,127,255,0.5)" font-size="9" text-anchor="middle">mood: startled | O-mouth</text>
+
+  <!-- Arrows: DORMANT → AWARE -->
+  <line x1="450" y1="175" x2="450" y2="225" stroke="#7fffff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="465" y="205" fill="#7fffff" font-size="9">alertness&gt;15 OR mic&gt;0.1</text>
+
+  <!-- Arrows: AWARE → DORMANT (timeout) -->
+  <path d="M 370 248 Q 300 200 370 160" fill="none" stroke="rgba(127,255,255,0.4)" stroke-width="1.2" marker-end="url(#arrow-dim)" stroke-dasharray="4,3"/>
+  <text x="270" y="205" fill="rgba(127,255,255,0.5)" font-size="8">timer&gt;180 &amp;&amp;</text>
+  <text x="270" y="216" fill="rgba(127,255,255,0.5)" font-size="8">alertness&lt;10</text>
+
+  <!-- Arrows: AWARE → CURIOUS -->
+  <line x1="450" y1="295" x2="450" y2="345" stroke="#7fffff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="465" y="323" fill="#7fffff" font-size="9">alertness&gt;40 OR mic&gt;0.2</text>
+
+  <!-- Arrows: CURIOUS → AWARE (timeout) -->
+  <path d="M 372 367 Q 310 315 372 280" fill="none" stroke="rgba(127,255,255,0.4)" stroke-width="1.2" marker-end="url(#arrow-dim)" stroke-dasharray="4,3"/>
+  <text x="250" y="322" fill="rgba(127,255,255,0.5)" font-size="8">timer&gt;300 &amp;&amp;</text>
+  <text x="250" y="333" fill="rgba(127,255,255,0.5)" font-size="8">alertness&lt;20</text>
+
+  <!-- Arrows: CURIOUS → EXCITED -->
+  <line x1="380" y1="400" x2="310" y2="477" stroke="#00c878" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="290" y="443" fill="#00c878" font-size="8">alertness&gt;70 OR</text>
+  <text x="290" y="454" fill="#00c878" font-size="8">mic&gt;0.4 OR touch</text>
+
+  <!-- Arrows: EXCITED → CURIOUS (timeout) -->
+  <path d="M 310 490 Q 370 435 400 395" fill="none" stroke="rgba(0,200,120,0.4)" stroke-width="1.2" marker-end="url(#arrow-green-dim)" stroke-dasharray="4,3"/>
+  <text x="345" y="445" fill="rgba(0,200,120,0.5)" font-size="8">timer&gt;240 &amp;&amp;</text>
+  <text x="345" y="456" fill="rgba(0,200,120,0.5)" font-size="8">alertness&lt;40</text>
+
+  <!-- Arrows: EXCITED → STARTLED -->
+  <line x1="330" y1="510" x2="570" y2="510" stroke="#b400c8" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
+  <text x="430" y="504" fill="#df7fff" font-size="8">mic&gt;0.7 OR</text>
+  <text x="430" y="514" fill="#df7fff" font-size="8">alertness&gt;90</text>
+
+  <!-- Arrows: STARTLED → CURIOUS -->
+  <path d="M 620 480 Q 560 420 500 395" fill="none" stroke="rgba(180,0,200,0.6)" stroke-width="1.5" marker-end="url(#arrow-purple-dim)" stroke-dasharray="4,3"/>
+  <text x="578" y="437" fill="rgba(200,127,255,0.6)" font-size="8">timer&gt;120</text>
+
+  <!-- Legend -->
+  <rect x="30" y="600" width="840" height="80" fill="rgba(255,255,255,0.03)" rx="8"/>
+  <text x="50" y="620" fill="rgba(127,255,255,0.8)" font-size="11" font-weight="bold">PROPERTIES</text>
+  <text x="50" y="636" fill="rgba(255,255,255,0.5)" font-size="9">energy (0-100): glow intensity, pulse speed, eye size</text>
+  <text x="50" y="649" fill="rgba(255,255,255,0.5)" font-size="9">alertness (0-100): body size, tentacle length, eye spread</text>
+  <text x="50" y="662" fill="rgba(255,255,255,0.5)" font-size="9">mood: calm | curious | excited | startled → color palette</text>
+
+  <text x="420" y="620" fill="rgba(127,255,255,0.8)" font-size="11" font-weight="bold">INPUTS</text>
+  <text x="420" y="636" fill="rgba(255,255,255,0.5)" font-size="9">🎤 Microphone → energy + alertness</text>
+  <text x="420" y="649" fill="rgba(255,255,255,0.5)" font-size="9">📱 Accelerometer/Gyroscope (tilt) → alertness</text>
+  <text x="420" y="662" fill="rgba(255,255,255,0.5)" font-size="9">👆 Touch + buttons (Feed/Calm/Play) → direct state control</text>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#7fffff"/>
+    </marker>
+    <marker id="arrow-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="rgba(127,255,255,0.4)"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#00c878"/>
+    </marker>
+    <marker id="arrow-green-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="rgba(0,200,120,0.4)"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#b400c8"/>
+    </marker>
+    <marker id="arrow-purple-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="rgba(180,0,200,0.6)"/>
+    </marker>
+  </defs>
+</svg>
