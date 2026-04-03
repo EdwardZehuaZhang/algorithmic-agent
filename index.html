@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LUMI — Algorithmic Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: 'Courier New', monospace;
+      touch-action: none;
+    }
+    canvas { display: block; }
+    #ui {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+    #state-label {
+      color: #7fffff;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align: center;
+      opacity: 0.8;
+    }
+    #bars {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .bar-label { color: rgba(255,255,255,0.5); font-size: 9px; width: 60px; flex-shrink: 0; }
+    .bar-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+    #energy-fill { background: linear-gradient(to right, #0ff, #0af); }
+    #alert-fill { background: linear-gradient(to right, #f0f, #f5a); }
+    #controls {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+    .ctrl-btn {
+      background: rgba(127,255,255,0.1);
+      border: 1px solid rgba(127,255,255,0.3);
+      color: #7fffff;
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: inherit;
+      text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ctrl-btn:active { background: rgba(127,255,255,0.25); }
+    #mic-status, #motion-status {
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+    }
+    #permission-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px;
+    }
+    #permission-overlay h2 { color: #7fffff; font-size: 18px; letter-spacing: 2px; text-align: center; }
+    #permission-overlay p { color: rgba(255,255,255,0.6); font-size: 12px; text-align: center; line-height: 1.6; }
+    #start-btn {
+      background: rgba(127,255,255,0.15);
+      border: 1px solid rgba(127,255,255,0.5);
+      color: #7fffff;
+      font-size: 13px;
+      letter-spacing: 3px;
+      padding: 14px 32px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-family: inherit;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+<div id="permission-overlay">
+  <h2>LUMI</h2>
+  <p>An algorithmic bioluminescent agent.<br>Responds to touch, motion, sound, and light.</p>
+  <p style="color:rgba(255,255,255,0.4); font-size:10px;">Requires microphone + motion access.<br>Best experienced on mobile.</p>
+  <button id="start-btn" onclick="initAgent()">AWAKEN LUMI</button>
+</div>
+
+<div id="ui" style="display:none">
+  <div id="state-label">dormant</div>
+  <div id="bars">
+    <span class="bar-label">ENERGY</span>
+    <div class="bar-track"><div class="bar-fill" id="energy-fill" style="width:50%"></div></div>
+  </div>
+  <div id="bars">
+    <span class="bar-label">ALERTNESS</span>
+    <div class="bar-track"><div class="bar-fill" id="alert-fill" style="width:0%"></div></div>
+  </div>
+  <div id="controls">
+    <button class="ctrl-btn" id="feed-btn">FEED</button>
+    <button class="ctrl-btn" id="calm-btn">CALM</button>
+    <button class="ctrl-btn" id="play-btn">PLAY</button>
+  </div>
+  <div id="mic-status">mic: inactive</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script>
+// ============================================================
+// LUMI — Algorithmic Agent
+// AY26 Assignment 2: Algorithmic Agent
+// NUS ID2109/ID3109 Design Platforms C
+// ============================================================
+
+// ── Agent Properties ────────────────────────────────────────
+let energy = 50;       // 0-100: affects glow, pulse speed
+let alertness = 0;     // 0-100: affects size, tentacle extension
+let mood = 'calm';     // calm | curious | excited | startled
+
+// ── State Machine ───────────────────────────────────────────
+// States: dormant → aware → curious → excited → startled → dormant
+const STATES = ['dormant', 'aware', 'curious', 'excited', 'startled'];
+let state = 'dormant';
+let stateTimer = 0;
+let stateTimeout = 0;
+
+// ── Visual properties ────────────────────────────────────────
+let pulsePhase = 0;
+let tentacles = [];
+const NUM_TENTACLES = 8;
+let bodyRadius = 80;
+let targetRadius = 80;
+
+// ── Sensor state ─────────────────────────────────────────────
+let micLevel = 0;
+let tiltX = 0, tiltY = 0;    // from deviceorientation
+let isTouching = false;
+let touchX = 0, touchY = 0;
+let micStream = null;
+let analyser = null;
+let micActive = false;
+
+// ── Particle system ──────────────────────────────────────────
+let particles = [];
+
+// ── Color palettes per mood ──────────────────────────────────
+const PALETTES = {
+  calm:      { h: 180, s: 80, b: 90 },   // cyan
+  curious:   { h: 200, s: 70, b: 95 },   // blue-cyan
+  excited:   { h: 160, s: 90, b: 100 },  // green-cyan
+  startled:  { h: 280, s: 85, b: 100 },  // purple-magenta
+};
+
+// ── p5.js sketch ─────────────────────────────────────────────
+const sketch = (p) => {
+  p.setup = () => {
+    const cnv = p.createCanvas(window.innerWidth, window.innerHeight - 110);
+    cnv.parent(document.body);
+    cnv.style('position', 'fixed');
+    cnv.style('top', '0');
+    cnv.style('left', '0');
+    p.colorMode(p.HSB, 360, 100, 100, 100);
+    p.noStroke();
+
+    // Init tentacles
+    for (let i = 0; i < NUM_TENTACLES; i++) {
+      tentacles.push({
+        angle: (p.TWO_PI / NUM_TENTACLES) * i,
+        length: 0,
+        targetLength: 0,
+        wave: p.random(p.TWO_PI),
+        speed: p.random(0.02, 0.05)
+      });
+    }
+  };
+
+  p.draw = () => {
+    p.clear();
+    p.background(220, 40, 5, 95);  // deep dark blue
+
+    const cx = p.width / 2;
+    const cy = p.height / 2;
+
+    updateAgent(p);
+    drawAura(p, cx, cy);
+    drawTentacles(p, cx, cy);
+    drawBody(p, cx, cy);
+    drawFace(p, cx, cy);
+    drawParticles(p);
+    updateUI();
+
+    stateTimer++;
+  };
+
+  // ── Touch input ──────────────────────────────────────────
+  p.touchStarted = () => {
+    isTouching = true;
+    touchX = p.mouseX;
+    touchY = p.mouseY;
+    handleTouch(p);
+    return false;
+  };
+  p.touchEnded = () => { isTouching = false; return false; };
+  p.mousePressed = () => {
+    isTouching = true;
+    touchX = p.mouseX;
+    touchY = p.mouseY;
+    handleTouch(p);
+    return false;
+  };
+  p.mouseReleased = () => { isTouching = false; return false; };
+
+  p.windowResized = () => {
+    p.resizeCanvas(window.innerWidth, window.innerHeight - 110);
+  };
+};
+
+// ── Agent state machine ──────────────────────────────────────
+function updateAgent(p) {
+  pulsePhase += 0.04;
+
+  // Read mic
+  if (analyser) {
+    const buf = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(buf);
+    const avg = buf.reduce((a, b) => a + b, 0) / buf.length;
+    micLevel = p.lerp(micLevel, avg / 255, 0.2);
+  } else {
+    micLevel = p.lerp(micLevel, 0, 0.1);
+  }
+
+  // Energy decay/regen
+  energy = p.constrain(energy - 0.03 + micLevel * 0.5, 0, 100);
+
+  // Alertness from tilt + touch
+  const tiltMag = Math.sqrt(tiltX * tiltX + tiltY * tiltY);
+  const targetAlert = p.constrain(
+    tiltMag * 1.5 + (isTouching ? 30 : 0) + micLevel * 60,
+    0, 100
+  );
+  alertness = p.lerp(alertness, targetAlert, 0.08);
+
+  // Smooth body radius
+  targetRadius = p.map(alertness, 0, 100, 70, 110) + p.sin(pulsePhase * p.map(energy, 0, 100, 0.5, 2)) * 8;
+  bodyRadius = p.lerp(bodyRadius, targetRadius, 0.1);
+
+  // Update tentacle targets
+  for (let t of tentacles) {
+    t.targetLength = p.map(alertness, 0, 100, 20, 120) + p.random(-5, 5);
+    t.length = p.lerp(t.length, t.targetLength, 0.06);
+    t.wave += t.speed;
+  }
+
+  // State transitions
+  updateState(p);
+
+  // Spawn particles on excitement
+  if (state === 'excited' || state === 'startled') {
+    if (Math.random() < 0.3) spawnParticle(p);
+  }
+
+  // Update particles
+  particles = particles.filter(pt => pt.life > 0);
+  for (let pt of particles) {
+    pt.x += pt.vx;
+    pt.y += pt.vy;
+    pt.vy += 0.05;
+    pt.life -= 2;
+  }
+}
+
+function updateState(p) {
+  const prevState = state;
+
+  if (state === 'dormant') {
+    mood = 'calm';
+    if (alertness > 15 || micLevel > 0.1) transitionTo('aware');
+
+  } else if (state === 'aware') {
+    mood = 'calm';
+    if (alertness > 40 || micLevel > 0.2) transitionTo('curious');
+    if (stateTimer > 180 && alertness < 10) transitionTo('dormant');
+
+  } else if (state === 'curious') {
+    mood = 'curious';
+    if (alertness > 70 || micLevel > 0.4) transitionTo('excited');
+    if (isTouching) transitionTo('excited');
+    if (stateTimer > 300 && alertness < 20) transitionTo('aware');
+
+  } else if (state === 'excited') {
+    mood = 'excited';
+    if (micLevel > 0.7 || alertness > 90) transitionTo('startled');
+    if (stateTimer > 240 && alertness < 40) transitionTo('curious');
+
+  } else if (state === 'startled') {
+    mood = 'startled';
+    // Auto-return to curious after timeout
+    if (stateTimer > 120) transitionTo('curious');
+  }
+
+  if (state !== prevState) document.getElementById('state-label').textContent = state;
+}
+
+function transitionTo(newState) {
+  state = newState;
+  stateTimer = 0;
+}
+
+// ── Drawing ──────────────────────────────────────────────────
+function drawAura(p, cx, cy) {
+  const pal = PALETTES[mood];
+  const glowRadius = bodyRadius * p.map(energy, 0, 100, 1.5, 3.0);
+  const alpha = p.map(energy, 0, 100, 10, 35);
+
+  for (let r = glowRadius; r > 0; r -= glowRadius * 0.1) {
+    const a = p.map(r, 0, glowRadius, alpha, 0);
+    p.fill(pal.h, pal.s, pal.b, a);
+    p.ellipse(cx, cy, r * 2, r * 2);
+  }
+}
+
+function drawTentacles(p, cx, cy) {
+  const pal = PALETTES[mood];
+  for (let t of tentacles) {
+    const waveOff = p.sin(t.wave) * 20;
+    const baseX = cx + p.cos(t.angle) * bodyRadius * 0.8;
+    const baseY = cy + p.sin(t.angle) * bodyRadius * 0.8;
+    const endX = cx + p.cos(t.angle + 0.3) * (bodyRadius + t.length) + waveOff;
+    const endY = cy + p.sin(t.angle + 0.3) * (bodyRadius + t.length);
+
+    p.stroke(pal.h, pal.s - 10, pal.b, 60);
+    p.strokeWeight(2.5);
+    p.noFill();
+
+    p.beginShape();
+    p.curveVertex(baseX, baseY);
+    p.curveVertex(baseX, baseY);
+    const mx = (baseX + endX) / 2 + p.sin(t.wave * 1.5) * 30;
+    const my = (baseY + endY) / 2 + p.cos(t.wave * 1.3) * 20;
+    p.curveVertex(mx, my);
+    p.curveVertex(endX, endY);
+    p.curveVertex(endX, endY);
+    p.endShape();
+    p.noStroke();
+  }
+}
+
+function drawBody(p, cx, cy) {
+  const pal = PALETTES[mood];
+  const r = bodyRadius;
+
+  // Outer shell
+  p.fill(pal.h, pal.s - 20, pal.b - 20, 70);
+  p.ellipse(cx, cy, r * 2.2, r * 2);
+
+  // Core
+  const energyGlow = p.map(energy, 0, 100, 40, 85);
+  p.fill(pal.h, pal.s, energyGlow, 90);
+  p.ellipse(cx, cy, r * 1.8, r * 1.6);
+
+  // Inner bright core
+  p.fill(pal.h + 20, pal.s - 30, 100, 60);
+  p.ellipse(cx, cy, r * 0.9, r * 0.8);
+
+  // Pulse ring
+  const pulseSz = r * (1.9 + p.sin(pulsePhase * 2) * 0.1);
+  p.stroke(pal.h, 60, 100, 20);
+  p.strokeWeight(1.5);
+  p.noFill();
+  p.ellipse(cx, cy, pulseSz * 2, pulseSz * 1.8);
+  p.noStroke();
+}
+
+function drawFace(p, cx, cy) {
+  const pal = PALETTES[mood];
+  const eyeSpread = p.map(alertness, 0, 100, 14, 22);
+  const eyeSize = p.map(energy, 0, 100, 4, 9);
+
+  // Eyes
+  p.fill(pal.h, 20, 100, 90);
+  p.ellipse(cx - eyeSpread, cy - 8, eyeSize * 2, eyeSize * 2.5);
+  p.ellipse(cx + eyeSpread, cy - 8, eyeSize * 2, eyeSize * 2.5);
+
+  // Pupils (track touch / tilt)
+  const pupilOff = 3;
+  const tiltOffX = p.constrain(tiltX * 0.05, -pupilOff, pupilOff);
+  const tiltOffY = p.constrain(tiltY * 0.05, -pupilOff, pupilOff);
+  p.fill(pal.h - 30, 90, 20, 95);
+  p.ellipse(cx - eyeSpread + tiltOffX, cy - 8 + tiltOffY, eyeSize * 0.9, eyeSize * 1.2);
+  p.ellipse(cx + eyeSpread + tiltOffX, cy - 8 + tiltOffY, eyeSize * 0.9, eyeSize * 1.2);
+
+  // Mouth expression by state
+  p.stroke(pal.h, 30, 100, 70);
+  p.strokeWeight(2);
+  p.noFill();
+  if (state === 'startled') {
+    // Open O mouth
+    p.ellipse(cx, cy + 14, 14, 18);
+  } else if (state === 'excited') {
+    // Big smile
+    p.arc(cx, cy + 10, 28, 20, 0, p.PI);
+  } else if (state === 'curious') {
+    // Small smile
+    p.arc(cx, cy + 10, 18, 12, 0, p.PI);
+  } else {
+    // Neutral line
+    p.line(cx - 10, cy + 14, cx + 10, cy + 14);
+  }
+  p.noStroke();
+}
+
+function drawParticles(p) {
+  for (let pt of particles) {
+    p.fill(pt.h, 80, 100, pt.life);
+    p.ellipse(pt.x, pt.y, pt.size, pt.size);
+  }
+}
+
+function spawnParticle(p) {
+  const cx = p.width / 2;
+  const cy = p.height / 2;
+  const angle = p.random(p.TWO_PI);
+  const speed = p.random(1, 4);
+  particles.push({
+    x: cx + p.cos(angle) * bodyRadius,
+    y: cy + p.sin(angle) * bodyRadius,
+    vx: p.cos(angle) * speed,
+    vy: p.sin(angle) * speed - 2,
+    size: p.random(3, 8),
+    h: PALETTES[mood].h + p.random(-30, 30),
+    life: 80
+  });
+}
+
+// ── Touch handler ────────────────────────────────────────────
+function handleTouch(p) {
+  // Feed button area handled by HTML buttons
+  energy = p.constrain(energy + 15, 0, 100);
+  alertness = p.constrain(alertness + 25, 0, 100);
+  for (let i = 0; i < 6; i++) spawnParticle(p);
+}
+
+// ── UI update ────────────────────────────────────────────────
+function updateUI() {
+  document.getElementById('energy-fill').style.width = energy + '%';
+  document.getElementById('alert-fill').style.width = alertness + '%';
+}
+
+// ── Sensor init ──────────────────────────────────────────────
+async function initAgent() {
+  document.getElementById('permission-overlay').style.display = 'none';
+  document.getElementById('ui').style.display = 'flex';
+
+  // Mic
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const ctx = new AudioContext();
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    src.connect(analyser);
+    micStream = stream;
+    micActive = true;
+    document.getElementById('mic-status').textContent = 'mic: active';
+  } catch (e) {
+    document.getElementById('mic-status').textContent = 'mic: denied — use touch/motion';
+  }
+
+  // Device orientation (iOS needs requestPermission)
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const res = await DeviceOrientationEvent.requestPermission();
+      if (res === 'granted') attachOrientation();
+    } catch (e) { /* denied */ }
+  } else {
+    attachOrientation();
+  }
+
+  // Start p5
+  new p5(sketch);
+
+  // Control buttons
+  document.getElementById('feed-btn').addEventListener('click', () => {
+    energy = Math.min(energy + 20, 100);
+    transitionTo(alertness > 40 ? 'curious' : 'aware');
+    for (let i = 0; i < 5; i++) spawnParticle({ width: window.innerWidth, height: window.innerHeight - 110, random: Math.random, cos: Math.cos, sin: Math.sin, TWO_PI: Math.PI * 2 });
+  });
+  document.getElementById('calm-btn').addEventListener('click', () => {
+    alertness = Math.max(alertness - 40, 0);
+    transitionTo('aware');
+  });
+  document.getElementById('play-btn').addEventListener('click', () => {
+    alertness = Math.min(alertness + 50, 100);
+    transitionTo('excited');
+  });
+}
+
+function attachOrientation() {
+  window.addEventListener('deviceorientation', (e) => {
+    tiltX = e.gamma || 0;  // left-right tilt
+    tiltY = e.beta || 0;   // front-back tilt
+  });
+}
+</script>
+</body>
+</html>
