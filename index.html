@@ -115,7 +115,7 @@
 <div id="permission-overlay">
   <h2>LUMI</h2>
   <p>An algorithmic bioluminescent agent.<br>Responds to touch, motion, sound, and light.</p>
-  <p style="color:rgba(255,255,255,0.4); font-size:10px;">Requires microphone + motion + camera access.<br>Cover the camera → angry. Shake → dizzy.<br>Best experienced on mobile.</p>
+  <p style="color:rgba(255,255,255,0.4); font-size:10px;">Requires microphone + motion + camera access.<br>Cover camera → angry. Shake → dizzy. Loud sound → scared.<br>Best experienced on mobile.</p>
   <button id="start-btn" onclick="initAgent()">AWAKEN LUMI</button>
 </div>
 
@@ -323,13 +323,21 @@ function updateAgent(p) {
   );
   alertness = p.lerp(alertness, targetAlert, 0.08);
 
-  // Smooth body radius
-  targetRadius = p.map(alertness, 0, 100, 70, 110) + p.sin(pulsePhase * p.map(energy, 0, 100, 0.5, 2)) * 8;
+  // Smooth body radius — scared cowers smaller
+  if (state === 'scared') {
+    targetRadius = 55 + p.sin(pulsePhase * 3) * 4;   // shrink + fast nervous pulse
+  } else {
+    targetRadius = p.map(alertness, 0, 100, 70, 110) + p.sin(pulsePhase * p.map(energy, 0, 100, 0.5, 2)) * 8;
+  }
   bodyRadius = p.lerp(bodyRadius, targetRadius, 0.1);
 
-  // Update tentacle targets
+  // Update tentacle targets — scared retracts them
   for (let t of tentacles) {
-    t.targetLength = p.map(alertness, 0, 100, 20, 120) + p.random(-5, 5);
+    if (state === 'scared') {
+      t.targetLength = 15 + p.random(-3, 3);
+    } else {
+      t.targetLength = p.map(alertness, 0, 100, 20, 120) + p.random(-5, 5);
+    }
     t.length = p.lerp(t.length, t.targetLength, 0.06);
     t.wave += t.speed;
   }
@@ -487,7 +495,9 @@ function drawBody(p, cx, cy) {
 function drawFace(p, cx, cy) {
   const pal = PALETTES[mood];
   const eyeSpread = p.map(alertness, 0, 100, 14, 22);
-  const eyeSize = p.map(energy, 0, 100, 4, 9);
+  let eyeSize = p.map(energy, 0, 100, 4, 9);
+  // Scared = wide-eyed
+  if (state === 'scared') eyeSize *= 1.5;
 
   // Eyes
   p.fill(pal.h, 20, 100, 90);
@@ -562,6 +572,13 @@ function drawFace(p, cx, cy) {
       p.vertex(mx, my);
     }
     p.endShape();
+  } else if (state === 'scared') {
+    // Quivering small O
+    p.stroke(pal.h, 80, 100, 90);
+    p.fill(pal.h - 10, 70, 20, 95);
+    const wobble = p.sin(p.frameCount * 0.6) * 1.2;
+    p.ellipse(cx, cy + 14, 10 + wobble, 14 + wobble);
+    p.noFill();
   } else if (state === 'startled') {
     // Open O mouth
     p.ellipse(cx, cy + 14, 14, 18);
