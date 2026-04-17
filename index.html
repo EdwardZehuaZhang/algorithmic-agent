@@ -78,7 +78,7 @@
       -webkit-tap-highlight-color: transparent;
     }
     .ctrl-btn:active { background: rgba(127,255,255,0.25); }
-    #mic-status, #motion-status {
+    #mic-status, #motion-status, #cam-status {
       font-size: 9px;
       color: rgba(255,255,255,0.3);
       text-align: center;
@@ -115,7 +115,7 @@
 <div id="permission-overlay">
   <h2>LUMI</h2>
   <p>An algorithmic bioluminescent agent.<br>Responds to touch, motion, sound, and light.</p>
-  <p style="color:rgba(255,255,255,0.4); font-size:10px;">Requires microphone + motion access.<br>Best experienced on mobile.</p>
+  <p style="color:rgba(255,255,255,0.4); font-size:10px;">Requires microphone + motion + camera access.<br>Cover the camera → angry. Shake → dizzy.<br>Best experienced on mobile.</p>
   <button id="start-btn" onclick="initAgent()">AWAKEN LUMI</button>
 </div>
 
@@ -135,6 +135,7 @@
     <button class="ctrl-btn" id="play-btn">PLAY</button>
   </div>
   <div id="mic-status">mic: inactive</div>
+  <div id="cam-status">cam: inactive</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
@@ -152,7 +153,8 @@ let mood = 'calm';     // calm | curious | excited | startled
 
 // ── State Machine ───────────────────────────────────────────
 // States: dormant → aware → curious → excited → startled → dormant
-const STATES = ['dormant', 'aware', 'curious', 'excited', 'startled'];
+// Reactive overrides: angry (camera covered), dizzy (shake)
+const STATES = ['dormant', 'aware', 'curious', 'excited', 'startled', 'angry', 'dizzy'];
 let state = 'dormant';
 let stateTimer = 0;
 let stateTimeout = 0;
@@ -173,6 +175,21 @@ let micStream = null;
 let analyser = null;
 let micActive = false;
 
+// Camera cover detection (brightness sampling)
+let camVideo = null;
+let camSampleCanvas = null;
+let camSampleCtx = null;
+let camBrightness = 1;       // 0 dark → 1 bright
+let camCovered = false;
+let camCoverFrames = 0;      // debounce frames while dark
+let camActive = false;
+
+// Shake detection (devicemotion)
+let shakeIntensity = 0;      // smoothed 0..~50
+let lastAccel = { x: 0, y: 0, z: 0 };
+let motionActive = false;
+let dizzySpin = 0;           // radians, for spinning effect
+
 // ── Particle system ──────────────────────────────────────────
 let particles = [];
 
@@ -182,6 +199,8 @@ const PALETTES = {
   curious:   { h: 200, s: 70, b: 95 },   // blue-cyan
   excited:   { h: 160, s: 90, b: 100 },  // green-cyan
   startled:  { h: 280, s: 85, b: 100 },  // purple-magenta
+  angry:     { h: 0,   s: 95, b: 100 },  // red
+  dizzy:     { h: 50,  s: 95, b: 100 },  // yellow
 };
 
 // ── p5.js sketch ─────────────────────────────────────────────
@@ -209,12 +228,25 @@ const sketch = (p) => {
 
   p.draw = () => {
     p.clear();
-    p.background(220, 40, 5, 95);  // deep dark blue
+    // Angry = hot red-tinted darkness; dizzy = muddy yellow haze
+    if (state === 'angry') p.background(0, 70, 8, 95);
+    else if (state === 'dizzy') p.background(45, 40, 8, 95);
+    else p.background(220, 40, 5, 95);
 
-    const cx = p.width / 2;
-    const cy = p.height / 2;
+    let cx = p.width / 2;
+    let cy = p.height / 2;
 
     updateAgent(p);
+
+    // Wobble when dizzy, jitter when angry
+    if (state === 'dizzy') {
+      cx += p.sin(dizzySpin * 1.1) * 18;
+      cy += p.cos(dizzySpin * 0.9) * 14;
+    } else if (state === 'angry') {
+      cx += p.random(-2.5, 2.5);
+      cy += p.random(-2.5, 2.5);
+    }
+
     drawAura(p, cx, cy);
     drawTentacles(p, cx, cy);
     drawBody(p, cx, cy);
@@ -262,6 +294,16 @@ function updateAgent(p) {
     micLevel = p.lerp(micLevel, 0, 0.1);
   }
 
+  // Sample camera brightness (covered = dark)
+  sampleCamera(p);
+
+  // Decay shake intensity (events add to it)
+  shakeIntensity = p.lerp(shakeIntensity, 0, 0.05);
+
+  // Advance dizzy spin proportional to shake / dizzy state
+  if (state === 'dizzy') dizzySpin += 0.15;
+  else dizzySpin *= 0.92;
+
   // Energy decay/regen
   energy = p.constrain(energy - 0.03 + micLevel * 0.5, 0, 100);
 
@@ -305,7 +347,25 @@ function updateAgent(p) {
 function updateState(p) {
   const prevState = state;
 
-  if (state === 'dormant') {
+  // High-priority reactive overrides
+  // Shake → dizzy beats everything (even angry — you can shake out of it)
+  if (shakeIntensity > 18 && state !== 'dizzy') {
+    transitionTo('dizzy');
+  } else if (camCovered && state !== 'dizzy' && state !== 'angry') {
+    transitionTo('angry');
+  }
+
+  if (state === 'dizzy') {
+    mood = 'dizzy';
+    // Stay dizzy while shaking; give at least a short recovery
+    if (stateTimer > 90 && shakeIntensity < 4) transitionTo('aware');
+
+  } else if (state === 'angry') {
+    mood = 'angry';
+    // Stay angry while covered; calm back down once uncovered
+    if (!camCovered && stateTimer > 60) transitionTo('aware');
+
+  } else if (state === 'dormant') {
     mood = 'calm';
     if (alertness > 15 || micLevel > 0.1) transitionTo('aware');
 
@@ -419,14 +479,70 @@ function drawFace(p, cx, cy) {
   const tiltOffX = p.constrain(tiltX * 0.05, -pupilOff, pupilOff);
   const tiltOffY = p.constrain(tiltY * 0.05, -pupilOff, pupilOff);
   p.fill(pal.h - 30, 90, 20, 95);
-  p.ellipse(cx - eyeSpread + tiltOffX, cy - 8 + tiltOffY, eyeSize * 0.9, eyeSize * 1.2);
-  p.ellipse(cx + eyeSpread + tiltOffX, cy - 8 + tiltOffY, eyeSize * 0.9, eyeSize * 1.2);
+
+  if (state === 'dizzy') {
+    // Swirly spiral pupils
+    p.noFill();
+    p.stroke(pal.h - 30, 90, 20, 95);
+    p.strokeWeight(1.5);
+    for (const ex of [cx - eyeSpread, cx + eyeSpread]) {
+      p.push();
+      p.translate(ex, cy - 8);
+      p.rotate(dizzySpin);
+      p.beginShape();
+      for (let a = 0; a < p.TWO_PI * 2; a += 0.3) {
+        const rr = a * eyeSize * 0.22;
+        p.vertex(p.cos(a) * rr, p.sin(a) * rr);
+      }
+      p.endShape();
+      p.pop();
+    }
+    p.noStroke();
+  } else {
+    p.ellipse(cx - eyeSpread + tiltOffX, cy - 8 + tiltOffY, eyeSize * 0.9, eyeSize * 1.2);
+    p.ellipse(cx + eyeSpread + tiltOffX, cy - 8 + tiltOffY, eyeSize * 0.9, eyeSize * 1.2);
+  }
+
+  // Angry eyebrows — diagonal slashes above eyes
+  if (state === 'angry') {
+    p.stroke(pal.h, 90, 90, 95);
+    p.strokeWeight(3);
+    const browY = cy - 8 - eyeSize * 1.6;
+    const browLen = eyeSize * 1.8;
+    // Left brow: outer low, inner high (angled down toward nose)
+    p.line(cx - eyeSpread - browLen * 0.6, browY - 3,
+           cx - eyeSpread + browLen * 0.4, browY + 5);
+    // Right brow: mirror
+    p.line(cx + eyeSpread + browLen * 0.6, browY - 3,
+           cx + eyeSpread - browLen * 0.4, browY + 5);
+    p.noStroke();
+  }
 
   // Mouth expression by state
   p.stroke(pal.h, 30, 100, 70);
   p.strokeWeight(2);
   p.noFill();
-  if (state === 'startled') {
+  if (state === 'angry') {
+    // Gritted frown
+    p.stroke(pal.h, 90, 90, 95);
+    p.strokeWeight(2.5);
+    p.arc(cx, cy + 20, 26, 18, p.PI, p.TWO_PI);
+    // teeth line
+    p.strokeWeight(1);
+    p.line(cx - 10, cy + 14, cx + 10, cy + 14);
+  } else if (state === 'dizzy') {
+    // Wavy woozy mouth
+    p.stroke(pal.h - 20, 60, 100, 85);
+    p.strokeWeight(2);
+    p.beginShape();
+    for (let i = 0; i <= 20; i++) {
+      const t = i / 20;
+      const mx = cx - 14 + t * 28;
+      const my = cy + 14 + p.sin(t * p.PI * 3 + dizzySpin) * 3;
+      p.vertex(mx, my);
+    }
+    p.endShape();
+  } else if (state === 'startled') {
     // Open O mouth
     p.ellipse(cx, cy + 14, 14, 18);
   } else if (state === 'excited') {
@@ -510,6 +626,22 @@ async function initAgent() {
     attachOrientation();
   }
 
+  // Device motion (iOS needs requestPermission) — shake detection
+  if (typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function') {
+    try {
+      const res = await DeviceMotionEvent.requestPermission();
+      if (res === 'granted') attachMotion();
+    } catch (e) { /* denied */ }
+  } else if (typeof DeviceMotionEvent !== 'undefined') {
+    attachMotion();
+  }
+  // Desktop fallback — shake the mouse
+  attachMouseShakeFallback();
+
+  // Camera (for cover-detection)
+  await initCamera();
+
   // Start p5
   new p5(sketch);
 
@@ -534,6 +666,89 @@ function attachOrientation() {
     tiltX = e.gamma || 0;  // left-right tilt
     tiltY = e.beta || 0;   // front-back tilt
   });
+}
+
+function attachMotion() {
+  window.addEventListener('devicemotion', (e) => {
+    const a = e.accelerationIncludingGravity || e.acceleration;
+    if (!a) return;
+    const dx = (a.x || 0) - lastAccel.x;
+    const dy = (a.y || 0) - lastAccel.y;
+    const dz = (a.z || 0) - lastAccel.z;
+    const delta = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    // Threshold out gentle motion; accumulate sharp jerks
+    if (delta > 3) shakeIntensity = Math.min(shakeIntensity + delta, 60);
+    lastAccel = { x: a.x || 0, y: a.y || 0, z: a.z || 0 };
+    motionActive = true;
+  });
+}
+
+// Fallback: desktops (no devicemotion). Detect rapid mouse shaking.
+let mouseHistory = [];
+function attachMouseShakeFallback() {
+  window.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+    mouseHistory.push({ x: e.clientX, y: e.clientY, t: now });
+    mouseHistory = mouseHistory.filter(s => now - s.t < 300);
+    if (mouseHistory.length < 5) return;
+    // Count direction reversals as a proxy for "shaking"
+    let reversals = 0;
+    for (let i = 2; i < mouseHistory.length; i++) {
+      const dx1 = mouseHistory[i - 1].x - mouseHistory[i - 2].x;
+      const dx2 = mouseHistory[i].x - mouseHistory[i - 1].x;
+      if (dx1 * dx2 < 0 && Math.abs(dx2) > 8) reversals++;
+    }
+    if (reversals >= 3) shakeIntensity = Math.min(shakeIntensity + 12, 60);
+  });
+}
+
+// Camera init — used for cover detection
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: 64, height: 48 },
+      audio: false
+    });
+    camVideo = document.createElement('video');
+    camVideo.srcObject = stream;
+    camVideo.setAttribute('playsinline', '');
+    camVideo.muted = true;
+    camVideo.style.display = 'none';
+    document.body.appendChild(camVideo);
+    await camVideo.play();
+    camSampleCanvas = document.createElement('canvas');
+    camSampleCanvas.width = 32;
+    camSampleCanvas.height = 24;
+    camSampleCtx = camSampleCanvas.getContext('2d', { willReadFrequently: true });
+    camActive = true;
+    const camStatus = document.getElementById('cam-status');
+    if (camStatus) camStatus.textContent = 'cam: active';
+  } catch (e) {
+    const camStatus = document.getElementById('cam-status');
+    if (camStatus) camStatus.textContent = 'cam: denied — cover detection off';
+  }
+}
+
+function sampleCamera(p) {
+  if (!camActive || !camVideo || camVideo.readyState < 2) return;
+  // Sample every ~6 frames to save CPU
+  if (p.frameCount % 6 !== 0) return;
+  try {
+    camSampleCtx.drawImage(camVideo, 0, 0, camSampleCanvas.width, camSampleCanvas.height);
+    const data = camSampleCtx.getImageData(0, 0, camSampleCanvas.width, camSampleCanvas.height).data;
+    let sum = 0;
+    const pixels = data.length / 4;
+    for (let i = 0; i < data.length; i += 4) {
+      // Perceptual luma
+      sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    }
+    const avg = sum / pixels / 255;   // 0..1
+    camBrightness = p.lerp(camBrightness, avg, 0.3);
+    // Covered = consistently very dark for ~30 frames (~0.5s)
+    if (camBrightness < 0.08) camCoverFrames = Math.min(camCoverFrames + 6, 120);
+    else camCoverFrames = Math.max(camCoverFrames - 6, 0);
+    camCovered = camCoverFrames > 30;
+  } catch (e) { /* video not ready */ }
 }
 </script>
 </body>
