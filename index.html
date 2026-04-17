@@ -153,8 +153,8 @@ let mood = 'calm';     // calm | curious | excited | startled
 
 // ── State Machine ───────────────────────────────────────────
 // States: dormant → aware → curious → excited → startled → dormant
-// Reactive overrides: angry (camera covered), dizzy (shake)
-const STATES = ['dormant', 'aware', 'curious', 'excited', 'startled', 'angry', 'dizzy'];
+// Reactive overrides: angry (camera covered), dizzy (shake), scared (loud mic)
+const STATES = ['dormant', 'aware', 'curious', 'excited', 'startled', 'angry', 'dizzy', 'scared'];
 let state = 'dormant';
 let stateTimer = 0;
 let stateTimeout = 0;
@@ -201,7 +201,11 @@ const PALETTES = {
   startled:  { h: 280, s: 85, b: 100 },  // purple-magenta
   angry:     { h: 0,   s: 95, b: 100 },  // red
   dizzy:     { h: 50,  s: 95, b: 100 },  // yellow
+  scared:    { h: 25,  s: 95, b: 100 },  // orange
 };
+
+// Scared (loud mic) debounce
+let loudFrames = 0;
 
 // ── p5.js sketch ─────────────────────────────────────────────
 const sketch = (p) => {
@@ -228,9 +232,10 @@ const sketch = (p) => {
 
   p.draw = () => {
     p.clear();
-    // Angry = hot red-tinted darkness; dizzy = muddy yellow haze
+    // Angry = hot red; dizzy = muddy yellow; scared = warm orange dusk
     if (state === 'angry') p.background(0, 70, 8, 95);
     else if (state === 'dizzy') p.background(45, 40, 8, 95);
+    else if (state === 'scared') p.background(20, 55, 8, 95);
     else p.background(220, 40, 5, 95);
 
     let cx = p.width / 2;
@@ -238,13 +243,16 @@ const sketch = (p) => {
 
     updateAgent(p);
 
-    // Wobble when dizzy, jitter when angry
+    // Wobble when dizzy, jitter when angry, tremble when scared
     if (state === 'dizzy') {
       cx += p.sin(dizzySpin * 1.1) * 18;
       cy += p.cos(dizzySpin * 0.9) * 14;
     } else if (state === 'angry') {
       cx += p.random(-2.5, 2.5);
       cy += p.random(-2.5, 2.5);
+    } else if (state === 'scared') {
+      cx += p.random(-1.5, 1.5);
+      cy += p.random(-1.5, 1.5);
     }
 
     drawAura(p, cx, cy);
@@ -347,11 +355,18 @@ function updateAgent(p) {
 function updateState(p) {
   const prevState = state;
 
-  // High-priority reactive overrides
-  // Shake → dizzy beats everything (even angry — you can shake out of it)
+  // Track sustained loud mic input (avoid triggering on single spikes)
+  if (micLevel > 0.55) loudFrames = Math.min(loudFrames + 2, 30);
+  else loudFrames = Math.max(loudFrames - 1, 0);
+  const isLoud = loudFrames > 6;
+
+  // High-priority reactive overrides — order matters.
+  // Priority: dizzy (shake) > scared (loud mic) > angry (camera cover)
   if (shakeIntensity > 18 && state !== 'dizzy') {
     transitionTo('dizzy');
-  } else if (camCovered && state !== 'dizzy' && state !== 'angry') {
+  } else if (isLoud && state !== 'dizzy' && state !== 'scared') {
+    transitionTo('scared');
+  } else if (camCovered && state !== 'dizzy' && state !== 'scared' && state !== 'angry') {
     transitionTo('angry');
   }
 
@@ -359,6 +374,11 @@ function updateState(p) {
     mood = 'dizzy';
     // Stay dizzy while shaking; give at least a short recovery
     if (stateTimer > 90 && shakeIntensity < 4) transitionTo('aware');
+
+  } else if (state === 'scared') {
+    mood = 'scared';
+    // Stay scared while loud; recover once it quiets down
+    if (!isLoud && stateTimer > 60 && micLevel < 0.25) transitionTo('aware');
 
   } else if (state === 'angry') {
     mood = 'angry';
@@ -600,47 +620,58 @@ async function initAgent() {
   document.getElementById('permission-overlay').style.display = 'none';
   document.getElementById('ui').style.display = 'flex';
 
-  // Mic
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const ctx = new AudioContext();
-    const src = ctx.createMediaStreamSource(stream);
-    analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    src.connect(analyser);
-    micStream = stream;
-    micActive = true;
-    document.getElementById('mic-status').textContent = 'mic: active';
-  } catch (e) {
-    document.getElementById('mic-status').textContent = 'mic: denied — use touch/motion';
-  }
+  // Fire all permission requests SYNCHRONOUSLY inside the user gesture.
+  // iOS Safari invalidates the gesture after the first `await`, so any
+  // requestPermission/getUserMedia started later silently fails.
+  const orientPromise = (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function')
+    ? DeviceOrientationEvent.requestPermission().catch(() => 'denied')
+    : Promise.resolve('granted');
 
-  // Device orientation (iOS needs requestPermission)
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const res = await DeviceOrientationEvent.requestPermission();
-      if (res === 'granted') attachOrientation();
-    } catch (e) { /* denied */ }
-  } else {
-    attachOrientation();
-  }
+  const motionPromise = (typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function')
+    ? DeviceMotionEvent.requestPermission().catch(() => 'denied')
+    : Promise.resolve('granted');
 
-  // Device motion (iOS needs requestPermission) — shake detection
-  if (typeof DeviceMotionEvent !== 'undefined' &&
-      typeof DeviceMotionEvent.requestPermission === 'function') {
-    try {
-      const res = await DeviceMotionEvent.requestPermission();
-      if (res === 'granted') attachMotion();
-    } catch (e) { /* denied */ }
-  } else if (typeof DeviceMotionEvent !== 'undefined') {
-    attachMotion();
-  }
+  // Fire mic + camera requests independently so one denial doesn't kill the other.
+  const micPromise = navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null);
+  const camPromise = navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'user', width: 64, height: 48 }, audio: false
+  }).catch(() => null);
+
+  const orientRes = await orientPromise;
+  if (orientRes === 'granted') attachOrientation();
+
+  const motionRes = await motionPromise;
+  if (motionRes === 'granted') attachMotion();
+
   // Desktop fallback — shake the mouse
   attachMouseShakeFallback();
 
-  // Camera (for cover-detection)
-  await initCamera();
+  const micStreamRes = await micPromise;
+  if (micStreamRes) {
+    try {
+      const ctx = new AudioContext();
+      const src = ctx.createMediaStreamSource(micStreamRes);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      micStream = micStreamRes;
+      micActive = true;
+      document.getElementById('mic-status').textContent = 'mic: active';
+    } catch (e) {
+      document.getElementById('mic-status').textContent = 'mic: error';
+    }
+  } else {
+    document.getElementById('mic-status').textContent = 'mic: denied — use touch/motion';
+  }
+
+  const camStreamRes = await camPromise;
+  if (camStreamRes) {
+    await initCameraFromStream(camStreamRes);
+  } else {
+    document.getElementById('cam-status').textContent = 'cam: denied';
+  }
 
   // Start p5
   new p5(sketch);
@@ -702,18 +733,21 @@ function attachMouseShakeFallback() {
   });
 }
 
-// Camera init — used for cover detection
-async function initCamera() {
+// Camera init — used for cover detection. Shares the combined stream with mic.
+async function initCameraFromStream(stream) {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: 64, height: 48 },
-      audio: false
-    });
+    // Check the stream actually has a video track (could be audio-only if cam denied).
+    if (!stream.getVideoTracks || stream.getVideoTracks().length === 0) {
+      document.getElementById('cam-status').textContent = 'cam: no video track';
+      return;
+    }
     camVideo = document.createElement('video');
     camVideo.srcObject = stream;
     camVideo.setAttribute('playsinline', '');
+    camVideo.setAttribute('autoplay', '');
     camVideo.muted = true;
-    camVideo.style.display = 'none';
+    // iOS Safari won't play display:none videos — keep it in DOM but invisible.
+    camVideo.style.cssText = 'position:fixed;top:0;left:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
     document.body.appendChild(camVideo);
     await camVideo.play();
     camSampleCanvas = document.createElement('canvas');
@@ -721,14 +755,13 @@ async function initCamera() {
     camSampleCanvas.height = 24;
     camSampleCtx = camSampleCanvas.getContext('2d', { willReadFrequently: true });
     camActive = true;
-    const camStatus = document.getElementById('cam-status');
-    if (camStatus) camStatus.textContent = 'cam: active';
+    document.getElementById('cam-status').textContent = 'cam: active';
   } catch (e) {
-    const camStatus = document.getElementById('cam-status');
-    if (camStatus) camStatus.textContent = 'cam: denied — cover detection off';
+    document.getElementById('cam-status').textContent = 'cam: play failed — ' + (e.message || e.name);
   }
 }
 
+let camVariance = 1;
 function sampleCamera(p) {
   if (!camActive || !camVideo || camVideo.readyState < 2) return;
   // Sample every ~6 frames to save CPU
@@ -736,18 +769,43 @@ function sampleCamera(p) {
   try {
     camSampleCtx.drawImage(camVideo, 0, 0, camSampleCanvas.width, camSampleCanvas.height);
     const data = camSampleCtx.getImageData(0, 0, camSampleCanvas.width, camSampleCanvas.height).data;
-    let sum = 0;
     const pixels = data.length / 4;
-    for (let i = 0; i < data.length; i += 4) {
-      // Perceptual luma
-      sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    // First pass: mean luma
+    let sum = 0;
+    const lumas = new Float32Array(pixels);
+    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+      const L = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      lumas[j] = L;
+      sum += L;
     }
-    const avg = sum / pixels / 255;   // 0..1
+    const meanL = sum / pixels;           // 0..255
+    // Second pass: variance (how uniform)
+    let varSum = 0;
+    for (let j = 0; j < pixels; j++) {
+      const d = lumas[j] - meanL;
+      varSum += d * d;
+    }
+    const stdDev = Math.sqrt(varSum / pixels) / 255;  // 0..1
+    const avg = meanL / 255;              // 0..1
+
     camBrightness = p.lerp(camBrightness, avg, 0.3);
-    // Covered = consistently very dark for ~30 frames (~0.5s)
-    if (camBrightness < 0.08) camCoverFrames = Math.min(camCoverFrames + 6, 120);
+    camVariance   = p.lerp(camVariance, stdDev, 0.3);
+
+    // Covered = (dark) OR (fairly dark AND very uniform — a finger lets warm reddish
+    // light through but the image is flat). Tuned for auto-exposure boosting gain.
+    const isDark = camBrightness < 0.18;
+    const isFlat = camVariance < 0.06;
+    const covered = isDark || (camBrightness < 0.35 && isFlat);
+
+    if (covered) camCoverFrames = Math.min(camCoverFrames + 6, 120);
     else camCoverFrames = Math.max(camCoverFrames - 6, 0);
-    camCovered = camCoverFrames > 30;
+    camCovered = camCoverFrames > 24;
+
+    // Live debug readout so you can calibrate
+    const camStatus = document.getElementById('cam-status');
+    if (camStatus) {
+      camStatus.textContent = `cam: b=${camBrightness.toFixed(2)} v=${camVariance.toFixed(2)} shake=${shakeIntensity.toFixed(0)}${camCovered ? ' COVERED' : ''}`;
+    }
   } catch (e) { /* video not ready */ }
 }
 </script>
