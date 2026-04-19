@@ -1,200 +1,368 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 880" width="1120" height="880" style="font-family: 'Menlo', 'Monaco', monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1120" width="1280" height="1120" style="font-family: 'Menlo', 'Monaco', monospace">
   <defs>
-    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#7fffff"/>
-    </marker>
-    <marker id="arrow-dim" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="rgba(127,255,255,0.45)"/>
-    </marker>
-    <marker id="arrow-green" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#00c878"/>
-    </marker>
-    <marker id="arrow-purple" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#b400c8"/>
-    </marker>
-    <marker id="arrow-red" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#ff4040"/>
-    </marker>
-    <marker id="arrow-orange" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#ff9030"/>
-    </marker>
-    <marker id="arrow-yellow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#ffd040"/>
-    </marker>
-    <marker id="arrow-red-dim" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,64,64,0.5)"/>
-    </marker>
-    <marker id="arrow-orange-dim" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,144,48,0.5)"/>
-    </marker>
-    <marker id="arrow-yellow-dim" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,208,64,0.5)"/>
-    </marker>
+    <!-- Arrow markers -->
+    <marker id="ar-cyan" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#7fffff"/></marker>
+    <marker id="ar-dim"  markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="rgba(127,255,255,0.45)"/></marker>
+    <marker id="ar-yel"  markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#ffd040"/></marker>
+    <marker id="ar-org"  markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#ff9030"/></marker>
+    <marker id="ar-red"  markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#ff4040"/></marker>
+
+    <!-- Creature base — radial glow gradients per mood -->
+    <radialGradient id="glow-calm" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#9ff" stop-opacity="1"/><stop offset="100%" stop-color="#0ac" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow-curious" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#aef" stop-opacity="1"/><stop offset="100%" stop-color="#08c" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow-excited" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#afe0c8" stop-opacity="1"/><stop offset="100%" stop-color="#0c8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow-startled" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e0a0f0" stop-opacity="1"/><stop offset="100%" stop-color="#b0c" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow-dizzy" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe898" stop-opacity="1"/><stop offset="100%" stop-color="#c90" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow-scared" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffc088" stop-opacity="1"/><stop offset="100%" stop-color="#c60" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow-angry" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff9090" stop-opacity="1"/><stop offset="100%" stop-color="#a00" stop-opacity="0"/></radialGradient>
   </defs>
 
-  <rect width="1120" height="880" fill="#05080f"/>
+  <rect width="1280" height="1120" fill="#05080f"/>
 
-  <!-- Title -->
-  <text x="560" y="40" fill="#7fffff" font-size="20" font-weight="bold" text-anchor="middle" letter-spacing="4">LUMI — STATE TRANSITION DIAGRAM</text>
-  <text x="560" y="60" fill="rgba(127,255,255,0.5)" font-size="11" text-anchor="middle">AY26 Assignment 2: Algorithmic Agent | NUS Design Platforms C</text>
+  <!-- Header -->
+  <text x="640" y="46" fill="#7fffff" font-size="22" font-weight="bold" text-anchor="middle" letter-spacing="5">LUMI — STATE TRANSITION DIAGRAM</text>
+  <text x="640" y="70" fill="rgba(127,255,255,0.5)" font-size="12" text-anchor="middle">AY26 Assignment 2: Algorithmic Agent · NUS Design Platforms C</text>
 
   <!-- Column headers -->
-  <text x="280" y="100" fill="rgba(127,255,255,0.85)" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">CORE PROGRESSION</text>
-  <text x="280" y="116" fill="rgba(127,255,255,0.4)" font-size="9" text-anchor="middle">escalation chain · timer-based decay</text>
+  <text x="290" y="112" fill="rgba(127,255,255,0.9)" font-size="14" text-anchor="middle" font-weight="bold" letter-spacing="3">CORE PROGRESSION</text>
+  <text x="290" y="130" fill="rgba(127,255,255,0.45)" font-size="10" text-anchor="middle">calm → aroused → shocked · timer-based decay</text>
 
-  <text x="860" y="100" fill="rgba(255,180,120,0.85)" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">REACTIVE OVERRIDES</text>
-  <text x="860" y="116" fill="rgba(255,180,120,0.4)" font-size="9" text-anchor="middle">interrupt any state · recover to aware</text>
+  <text x="990" y="112" fill="rgba(255,180,120,0.9)" font-size="14" text-anchor="middle" font-weight="bold" letter-spacing="3">REACTIVE OVERRIDES</text>
+  <text x="990" y="130" fill="rgba(255,180,120,0.45)" font-size="10" text-anchor="middle">interrupt any state · priority: dizzy &gt; scared &gt; angry</text>
 
-  <!-- Vertical divider -->
-  <line x1="560" y1="95" x2="560" y2="720" stroke="rgba(127,255,255,0.1)" stroke-width="1" stroke-dasharray="2,4"/>
+  <!-- =============================================================== -->
+  <!-- CORE PROGRESSION — 5 illustrated cards, left column             -->
+  <!-- =============================================================== -->
 
-  <!-- ============ CORE PROGRESSION (left column) ============ -->
+  <!-- DORMANT card ========================================================= -->
+  <g>
+    <rect x="130" y="160" width="320" height="110" rx="10" fill="rgba(0,180,180,0.08)" stroke="#00b4b4" stroke-width="1.8"/>
+    <!-- creature -->
+    <g transform="translate(195,215)">
+      <circle cx="0" cy="0" r="34" fill="url(#glow-calm)" opacity="0.35"/>
+      <!-- tentacles (short, retracted) -->
+      <path d="M -14,10 q -2,8 -4,14" stroke="#3dd" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <path d="M  -5,13 q  0,9  0,16" stroke="#3dd" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <path d="M   5,13 q  0,9  0,16" stroke="#3dd" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <path d="M  14,10 q  2,8  4,14" stroke="#3dd" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <!-- body -->
+      <ellipse cx="0" cy="0" rx="18" ry="16" fill="#0aa" opacity="0.75"/>
+      <ellipse cx="0" cy="0" rx="10" ry="9"  fill="#7fffff" opacity="0.5"/>
+      <!-- closed/sleepy eyes -->
+      <line x1="-8" y1="-3" x2="-3" y2="-3" stroke="#044" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="3"  y1="-3" x2="8"  y2="-3" stroke="#044" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- neutral mouth -->
+      <line x1="-4" y1="6" x2="4" y2="6" stroke="#044" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <text x="270" y="195" fill="#7fffff" font-size="16" font-weight="bold" letter-spacing="2">DORMANT</text>
+    <text x="270" y="214" fill="rgba(127,255,255,0.7)" font-size="10">mood: calm · cyan</text>
+    <text x="270" y="230" fill="rgba(255,255,255,0.45)" font-size="9">low energy, tentacles retracted,</text>
+    <text x="270" y="243" fill="rgba(255,255,255,0.45)" font-size="9">sleepy eyes, slow pulse</text>
+    <text x="270" y="259" fill="rgba(127,255,255,0.5)" font-size="9" font-style="italic">initial state</text>
+  </g>
 
-  <!-- DORMANT -->
-  <ellipse cx="280" cy="170" rx="95" ry="32" fill="rgba(0,180,180,0.12)" stroke="#00b4b4" stroke-width="2"/>
-  <text x="280" y="168" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">DORMANT</text>
-  <text x="280" y="184" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: calm · cyan · low energy</text>
+  <!-- AWARE card =========================================================== -->
+  <g>
+    <rect x="130" y="310" width="320" height="110" rx="10" fill="rgba(0,160,220,0.10)" stroke="#00a0dc" stroke-width="1.8"/>
+    <g transform="translate(195,365)">
+      <circle cx="0" cy="0" r="38" fill="url(#glow-calm)" opacity="0.4"/>
+      <!-- tentacles medium -->
+      <path d="M -18,8  q -4,12 -6,18" stroke="#4df" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  -7,14 q -1,12 -2,20" stroke="#4df" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M   7,14 q  1,12  2,20" stroke="#4df" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  18,8  q  4,12  6,18" stroke="#4df" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="0" rx="20" ry="18" fill="#0bc" opacity="0.78"/>
+      <ellipse cx="0" cy="0" rx="11" ry="10" fill="#9ff" opacity="0.55"/>
+      <!-- open small eyes -->
+      <ellipse cx="-6" cy="-3" rx="2.5" ry="3.2" fill="#fff"/>
+      <ellipse cx="6"  cy="-3" rx="2.5" ry="3.2" fill="#fff"/>
+      <circle cx="-6" cy="-3" r="1.2" fill="#036"/>
+      <circle cx="6"  cy="-3" r="1.2" fill="#036"/>
+      <line x1="-4" y1="6" x2="4" y2="6" stroke="#036" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <text x="270" y="345" fill="#7fffff" font-size="16" font-weight="bold" letter-spacing="2">AWARE</text>
+    <text x="270" y="364" fill="rgba(127,255,255,0.7)" font-size="10">mood: calm · cyan</text>
+    <text x="270" y="380" fill="rgba(255,255,255,0.45)" font-size="9">eyes open, medium body,</text>
+    <text x="270" y="393" fill="rgba(255,255,255,0.45)" font-size="9">idle tentacle drift</text>
+    <text x="270" y="409" fill="rgba(127,255,255,0.5)" font-size="9" font-style="italic">recovery target for overrides</text>
+  </g>
 
-  <!-- AWARE -->
-  <ellipse cx="280" cy="280" rx="95" ry="32" fill="rgba(0,160,220,0.14)" stroke="#00a0dc" stroke-width="2"/>
-  <text x="280" y="278" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">AWARE</text>
-  <text x="280" y="294" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: calm · cyan · eyes open</text>
+  <!-- CURIOUS card ========================================================= -->
+  <g>
+    <rect x="130" y="460" width="320" height="110" rx="10" fill="rgba(0,140,255,0.12)" stroke="#008cff" stroke-width="1.8"/>
+    <g transform="translate(195,515)">
+      <circle cx="0" cy="0" r="44" fill="url(#glow-curious)" opacity="0.45"/>
+      <!-- tentacles longer -->
+      <path d="M -20,8  q -8,15 -10,22" stroke="#7bf" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M -10,13 q -4,16 -5,24"  stroke="#7bf" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M   0,15 q  0,17  0,25"  stroke="#7bf" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  10,13 q  4,16  5,24"  stroke="#7bf" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  20,8  q  8,15  10,22" stroke="#7bf" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="0" rx="22" ry="20" fill="#08c" opacity="0.8"/>
+      <ellipse cx="0" cy="0" rx="12" ry="11" fill="#bdf" opacity="0.6"/>
+      <ellipse cx="-7" cy="-3" rx="3" ry="3.8" fill="#fff"/>
+      <ellipse cx="7"  cy="-3" rx="3" ry="3.8" fill="#fff"/>
+      <circle cx="-6" cy="-3" r="1.4" fill="#025"/>
+      <circle cx="8"  cy="-3" r="1.4" fill="#025"/>
+      <!-- small smile -->
+      <path d="M -5,6 q 5,4 10,0" stroke="#025" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    </g>
+    <text x="270" y="495" fill="#7fffff" font-size="16" font-weight="bold" letter-spacing="2">CURIOUS</text>
+    <text x="270" y="514" fill="rgba(127,255,255,0.7)" font-size="10">mood: curious · blue-cyan</text>
+    <text x="270" y="530" fill="rgba(255,255,255,0.45)" font-size="9">tentacles extended, pupils track,</text>
+    <text x="270" y="543" fill="rgba(255,255,255,0.45)" font-size="9">small smile</text>
+    <text x="270" y="559" fill="rgba(127,255,255,0.5)" font-size="9" font-style="italic">engaged / exploring</text>
+  </g>
 
-  <!-- CURIOUS -->
-  <ellipse cx="280" cy="390" rx="95" ry="32" fill="rgba(0,140,255,0.16)" stroke="#008cff" stroke-width="2"/>
-  <text x="280" y="388" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">CURIOUS</text>
-  <text x="280" y="404" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: curious · blue · tentacles out</text>
+  <!-- EXCITED card ========================================================= -->
+  <g>
+    <rect x="130" y="610" width="320" height="110" rx="10" fill="rgba(0,200,120,0.12)" stroke="#00c878" stroke-width="1.8"/>
+    <g transform="translate(195,665)">
+      <circle cx="0" cy="0" r="48" fill="url(#glow-excited)" opacity="0.5"/>
+      <!-- wavy long tentacles -->
+      <path d="M -22,6  q -10,6 -6,14  q -4,6 -10,10" stroke="#7fc" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M -13,12 q -4,8  -8,14 q -2,6 -4,10"   stroke="#7fc" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  -4,15 q  2,8  -2,16 q  2,6 -2,12"    stroke="#7fc" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M   4,15 q -2,8   2,16 q -2,6  2,12"    stroke="#7fc" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  13,12 q  4,8   8,14 q  2,6  4,10"   stroke="#7fc" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  22,6  q 10,6   6,14 q  4,6 10,10"   stroke="#7fc" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="0" rx="25" ry="22" fill="#0d8" opacity="0.82"/>
+      <ellipse cx="0" cy="0" rx="14" ry="12" fill="#cfd" opacity="0.65"/>
+      <ellipse cx="-8" cy="-3" rx="3.5" ry="4.2" fill="#fff"/>
+      <ellipse cx="8"  cy="-3" rx="3.5" ry="4.2" fill="#fff"/>
+      <circle cx="-8" cy="-3" r="1.6" fill="#052"/>
+      <circle cx="8"  cy="-3" r="1.6" fill="#052"/>
+      <!-- big smile -->
+      <path d="M -8,4 q 8,8 16,0" stroke="#052" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <!-- particles -->
+      <circle cx="-28" cy="-18" r="1.8" fill="#9fc" opacity="0.85"/>
+      <circle cx="26"  cy="-14" r="1.4" fill="#9fc" opacity="0.85"/>
+      <circle cx="-22" cy="22"  r="1.4" fill="#9fc" opacity="0.7"/>
+      <circle cx="30"  cy="18"  r="1.2" fill="#9fc" opacity="0.7"/>
+    </g>
+    <text x="270" y="645" fill="#7fffff" font-size="16" font-weight="bold" letter-spacing="2">EXCITED</text>
+    <text x="270" y="664" fill="rgba(127,255,255,0.7)" font-size="10">mood: excited · green-cyan</text>
+    <text x="270" y="680" fill="rgba(255,255,255,0.45)" font-size="9">large body, wavy tentacles,</text>
+    <text x="270" y="693" fill="rgba(255,255,255,0.45)" font-size="9">big smile, particles spawn</text>
+    <text x="270" y="709" fill="rgba(127,255,255,0.5)" font-size="9" font-style="italic">peak interaction</text>
+  </g>
 
-  <!-- EXCITED -->
-  <ellipse cx="280" cy="500" rx="95" ry="32" fill="rgba(0,200,120,0.16)" stroke="#00c878" stroke-width="2"/>
-  <text x="280" y="498" fill="#7fffff" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">EXCITED</text>
-  <text x="280" y="514" fill="rgba(127,255,255,0.5)" font-size="9" text-anchor="middle">mood: excited · green · particles</text>
+  <!-- STARTLED card ======================================================== -->
+  <g>
+    <rect x="130" y="760" width="320" height="110" rx="10" fill="rgba(180,0,200,0.12)" stroke="#b400c8" stroke-width="1.8"/>
+    <g transform="translate(195,815)">
+      <circle cx="0" cy="0" r="46" fill="url(#glow-startled)" opacity="0.5"/>
+      <!-- straight jagged tentacles -->
+      <line x1="-22" y1="4"  x2="-30" y2="22" stroke="#d8f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-13" y1="14" x2="-18" y2="30" stroke="#d8f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-4"  y1="18" x2="-6"  y2="32" stroke="#d8f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="4"   y1="18" x2="6"   y2="32" stroke="#d8f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="13"  y1="14" x2="18"  y2="30" stroke="#d8f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="22"  y1="4"  x2="30"  y2="22" stroke="#d8f" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="0" cy="0" rx="24" ry="21" fill="#a1c" opacity="0.82"/>
+      <ellipse cx="0" cy="0" rx="13" ry="11" fill="#ecf" opacity="0.62"/>
+      <!-- wide shocked eyes -->
+      <ellipse cx="-8" cy="-4" rx="4" ry="5" fill="#fff"/>
+      <ellipse cx="8"  cy="-4" rx="4" ry="5" fill="#fff"/>
+      <circle cx="-8" cy="-3" r="1.4" fill="#203"/>
+      <circle cx="8"  cy="-3" r="1.4" fill="#203"/>
+      <!-- O mouth -->
+      <ellipse cx="0" cy="7" rx="3.5" ry="4.5" fill="#203" opacity="0.9"/>
+    </g>
+    <text x="270" y="795" fill="#df7fff" font-size="16" font-weight="bold" letter-spacing="2">STARTLED</text>
+    <text x="270" y="814" fill="rgba(200,127,255,0.75)" font-size="10">mood: startled · purple</text>
+    <text x="270" y="830" fill="rgba(255,255,255,0.45)" font-size="9">tentacles splayed, wide eyes,</text>
+    <text x="270" y="843" fill="rgba(255,255,255,0.45)" font-size="9">O-mouth, jerky motion</text>
+    <text x="270" y="859" fill="rgba(200,127,255,0.6)" font-size="9" font-style="italic">overstimulated</text>
+  </g>
 
-  <!-- STARTLED -->
-  <ellipse cx="280" cy="610" rx="95" ry="32" fill="rgba(180,0,200,0.16)" stroke="#b400c8" stroke-width="2"/>
-  <text x="280" y="608" fill="#df7fff" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">STARTLED</text>
-  <text x="280" y="624" fill="rgba(200,127,255,0.5)" font-size="9" text-anchor="middle">mood: startled · purple · O-mouth</text>
+  <!-- Forward arrows (down) between core cards -->
+  <line x1="290" y1="272" x2="290" y2="308" stroke="#7fffff" stroke-width="1.8" marker-end="url(#ar-cyan)"/>
+  <text x="300" y="294" fill="#7fffff" font-size="10">alertness &gt; 15  or  mic &gt; 0.1</text>
 
-  <!-- Forward arrows (solid, right side of nodes) -->
-  <!-- DORMANT → AWARE -->
-  <line x1="280" y1="202" x2="280" y2="248" stroke="#7fffff" stroke-width="1.6" marker-end="url(#arrow)"/>
-  <text x="295" y="221" fill="#7fffff" font-size="9">alertness &gt; 15</text>
-  <text x="295" y="233" fill="#7fffff" font-size="9">OR mic &gt; 0.1</text>
+  <line x1="290" y1="422" x2="290" y2="458" stroke="#7fffff" stroke-width="1.8" marker-end="url(#ar-cyan)"/>
+  <text x="300" y="444" fill="#7fffff" font-size="10">alertness &gt; 40  or  mic &gt; 0.2</text>
 
-  <!-- AWARE → CURIOUS -->
-  <line x1="280" y1="312" x2="280" y2="358" stroke="#7fffff" stroke-width="1.6" marker-end="url(#arrow)"/>
-  <text x="295" y="331" fill="#7fffff" font-size="9">alertness &gt; 40</text>
-  <text x="295" y="343" fill="#7fffff" font-size="9">OR mic &gt; 0.2</text>
+  <line x1="290" y1="572" x2="290" y2="608" stroke="#00c878" stroke-width="1.8" marker-end="url(#ar-yel)"/>
+  <text x="300" y="594" fill="#00c878" font-size="10">alertness &gt; 70  ·  mic &gt; 0.4  ·  touch</text>
 
-  <!-- CURIOUS → EXCITED -->
-  <line x1="280" y1="422" x2="280" y2="468" stroke="#00c878" stroke-width="1.6" marker-end="url(#arrow-green)"/>
-  <text x="295" y="437" fill="#00c878" font-size="9">alertness &gt; 70</text>
-  <text x="295" y="449" fill="#00c878" font-size="9">OR mic &gt; 0.4</text>
-  <text x="295" y="461" fill="#00c878" font-size="9">OR touch</text>
+  <line x1="290" y1="722" x2="290" y2="758" stroke="#b400c8" stroke-width="1.8" marker-end="url(#ar-red)"/>
+  <text x="300" y="744" fill="#df7fff" font-size="10">mic &gt; 0.7  or  alertness &gt; 90</text>
 
-  <!-- EXCITED → STARTLED -->
-  <line x1="280" y1="532" x2="280" y2="578" stroke="#b400c8" stroke-width="1.6" marker-end="url(#arrow-purple)"/>
-  <text x="295" y="551" fill="#df7fff" font-size="9">mic &gt; 0.7</text>
-  <text x="295" y="563" fill="#df7fff" font-size="9">OR alertness &gt; 90</text>
+  <!-- Decay arrows (dashed, up) on left side -->
+  <path d="M 160 320 Q 80 290 160 270" fill="none" stroke="rgba(127,255,255,0.45)" stroke-width="1.2" marker-end="url(#ar-dim)" stroke-dasharray="4,3"/>
+  <text x="20" y="288" fill="rgba(127,255,255,0.55)" font-size="8">timer&gt;180</text>
+  <text x="20" y="300" fill="rgba(127,255,255,0.55)" font-size="8">alert&lt;10</text>
 
-  <!-- Decay arrows (dashed, left side of nodes) -->
-  <!-- AWARE → DORMANT -->
-  <path d="M 185 270 Q 130 225 185 182" fill="none" stroke="rgba(127,255,255,0.4)" stroke-width="1.2" marker-end="url(#arrow-dim)" stroke-dasharray="4,3"/>
-  <text x="95" y="224" fill="rgba(127,255,255,0.5)" font-size="8">timer &gt; 180</text>
-  <text x="95" y="235" fill="rgba(127,255,255,0.5)" font-size="8">&amp;&amp; alert &lt; 10</text>
+  <path d="M 160 470 Q 80 440 160 420" fill="none" stroke="rgba(127,255,255,0.45)" stroke-width="1.2" marker-end="url(#ar-dim)" stroke-dasharray="4,3"/>
+  <text x="20" y="438" fill="rgba(127,255,255,0.55)" font-size="8">timer&gt;300</text>
+  <text x="20" y="450" fill="rgba(127,255,255,0.55)" font-size="8">alert&lt;20</text>
 
-  <!-- CURIOUS → AWARE -->
-  <path d="M 185 380 Q 130 335 185 292" fill="none" stroke="rgba(127,255,255,0.4)" stroke-width="1.2" marker-end="url(#arrow-dim)" stroke-dasharray="4,3"/>
-  <text x="95" y="334" fill="rgba(127,255,255,0.5)" font-size="8">timer &gt; 300</text>
-  <text x="95" y="345" fill="rgba(127,255,255,0.5)" font-size="8">&amp;&amp; alert &lt; 20</text>
+  <path d="M 160 620 Q 80 590 160 570" fill="none" stroke="rgba(127,255,255,0.45)" stroke-width="1.2" marker-end="url(#ar-dim)" stroke-dasharray="4,3"/>
+  <text x="20" y="588" fill="rgba(127,255,255,0.55)" font-size="8">timer&gt;240</text>
+  <text x="20" y="600" fill="rgba(127,255,255,0.55)" font-size="8">alert&lt;40</text>
 
-  <!-- EXCITED → CURIOUS -->
-  <path d="M 185 490 Q 130 445 185 402" fill="none" stroke="rgba(0,200,120,0.45)" stroke-width="1.2" marker-end="url(#arrow-dim)" stroke-dasharray="4,3"/>
-  <text x="95" y="444" fill="rgba(0,200,120,0.6)" font-size="8">timer &gt; 240</text>
-  <text x="95" y="455" fill="rgba(0,200,120,0.6)" font-size="8">&amp;&amp; alert &lt; 40</text>
+  <path d="M 160 770 Q 80 740 160 720" fill="none" stroke="rgba(127,255,255,0.45)" stroke-width="1.2" marker-end="url(#ar-dim)" stroke-dasharray="4,3"/>
+  <text x="20" y="745" fill="rgba(127,255,255,0.55)" font-size="8">timer&gt;120</text>
 
-  <!-- STARTLED → CURIOUS -->
-  <path d="M 185 600 Q 110 500 185 402" fill="none" stroke="rgba(180,0,200,0.45)" stroke-width="1.2" marker-end="url(#arrow-dim)" stroke-dasharray="4,3"/>
-  <text x="55" y="500" fill="rgba(200,127,255,0.6)" font-size="8">timer &gt; 120</text>
+  <!-- =============================================================== -->
+  <!-- REACTIVE OVERRIDES — right column                               -->
+  <!-- =============================================================== -->
 
-  <!-- ============ REACTIVE OVERRIDES (right column) ============ -->
+  <!-- ANY CORE STATE hub -->
+  <rect x="600" y="480" width="160" height="60" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,200,140,0.5)" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <text x="680" y="505" fill="rgba(255,220,180,0.95)" font-size="12" text-anchor="middle" font-weight="bold" letter-spacing="2">ANY CORE</text>
+  <text x="680" y="524" fill="rgba(255,220,180,0.95)" font-size="12" text-anchor="middle" font-weight="bold" letter-spacing="2">STATE</text>
 
-  <!-- Priority label -->
-  <rect x="720" y="138" width="280" height="32" fill="rgba(255,255,255,0.04)" stroke="rgba(255,180,120,0.3)" stroke-width="1" rx="4"/>
-  <text x="860" y="152" fill="rgba(255,220,180,0.9)" font-size="9" text-anchor="middle" font-weight="bold">PRIORITY ORDER</text>
-  <text x="860" y="164" fill="rgba(255,220,180,0.7)" font-size="9" text-anchor="middle">dizzy &gt; scared &gt; angry &gt; normal</text>
+  <!-- DIZZY card =========================================================== -->
+  <g>
+    <rect x="830" y="160" width="320" height="150" rx="10" fill="rgba(255,208,64,0.12)" stroke="#ffd040" stroke-width="1.8"/>
+    <g transform="translate(895,235)">
+      <circle cx="0" cy="0" r="44" fill="url(#glow-dizzy)" opacity="0.5"/>
+      <!-- droopy uneven tentacles -->
+      <path d="M -18,10 q -6,14 -14,16" stroke="#fda" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  -6,14 q -2,15 -6,22"  stroke="#fda" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M   6,14 q  2,15  4,24"  stroke="#fda" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  18,10 q  6,14 12,18"  stroke="#fda" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- body tilted -->
+      <ellipse cx="2" cy="1" rx="22" ry="19" fill="#e80" opacity="0.75" transform="rotate(-8 0 0)"/>
+      <ellipse cx="0" cy="0" rx="12" ry="11" fill="#fe8" opacity="0.6"/>
+      <!-- spiral eyes -->
+      <g>
+        <path d="M -8,-4 m -3,0 a 3,3 0 1,0 6,0 a 2,2 0 1,1 -4,0 a 1,1 0 1,0 2,0"
+              stroke="#330" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+        <path d="M  8,-4 m -3,0 a 3,3 0 1,0 6,0 a 2,2 0 1,1 -4,0 a 1,1 0 1,0 2,0"
+              stroke="#330" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      </g>
+      <!-- wavy mouth -->
+      <path d="M -7,6 q 2,-3 4,0 q 2,3 4,0 q 2,-3 4,0" stroke="#330" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    </g>
+    <text x="990" y="195" fill="#ffe080" font-size="16" font-weight="bold" letter-spacing="2">DIZZY</text>
+    <text x="990" y="214" fill="rgba(255,224,128,0.75)" font-size="10">mood: dizzy · yellow</text>
+    <text x="990" y="230" fill="rgba(255,255,255,0.45)" font-size="9">body wobbles in a figure-8,</text>
+    <text x="990" y="243" fill="rgba(255,255,255,0.45)" font-size="9">spiral pupils, wavy mouth,</text>
+    <text x="990" y="256" fill="rgba(255,255,255,0.45)" font-size="9">droopy tentacles</text>
+    <text x="990" y="279" fill="rgba(255,208,64,0.85)" font-size="10" font-weight="bold">TRIGGER</text>
+    <text x="990" y="293" fill="rgba(255,224,128,0.85)" font-size="9">shakeIntensity &gt; 18 (devicemotion)</text>
+    <text x="990" y="305" fill="rgba(255,224,128,0.6)" font-size="9" font-style="italic">recover: shake&lt;4 &amp;&amp; timer&gt;90 → aware</text>
+  </g>
 
-  <!-- DIZZY -->
-  <ellipse cx="860" cy="230" rx="110" ry="32" fill="rgba(255,208,64,0.15)" stroke="#ffd040" stroke-width="2"/>
-  <text x="860" y="228" fill="#ffe080" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">DIZZY</text>
-  <text x="860" y="244" fill="rgba(255,224,128,0.55)" font-size="9" text-anchor="middle">yellow · spiral pupils · wobble</text>
+  <!-- SCARED card ========================================================== -->
+  <g>
+    <rect x="830" y="340" width="320" height="150" rx="10" fill="rgba(255,144,48,0.12)" stroke="#ff9030" stroke-width="1.8"/>
+    <g transform="translate(895,415)">
+      <circle cx="0" cy="0" r="36" fill="url(#glow-scared)" opacity="0.55"/>
+      <!-- retracted stubby tentacles -->
+      <path d="M -10,8 q 0,5 -2,9" stroke="#fb7" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  -3,10 q 0,5 -1,9" stroke="#fb7" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M   3,10 q 0,5  1,9" stroke="#fb7" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M  10,8  q 0,5  2,9" stroke="#fb7" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- small cowering body -->
+      <ellipse cx="0" cy="0" rx="15" ry="13" fill="#d70" opacity="0.8"/>
+      <ellipse cx="0" cy="0" rx="8"  ry="7" fill="#fc8" opacity="0.55"/>
+      <!-- HUGE wide frightened eyes -->
+      <ellipse cx="-6" cy="-3" rx="4.5" ry="5.5" fill="#fff"/>
+      <ellipse cx="6"  cy="-3" rx="4.5" ry="5.5" fill="#fff"/>
+      <circle cx="-6" cy="-2" r="1.8" fill="#310"/>
+      <circle cx="6"  cy="-2" r="1.8" fill="#310"/>
+      <!-- tiny quivering O mouth -->
+      <ellipse cx="0" cy="5" rx="1.8" ry="2.4" fill="#310"/>
+      <!-- shake lines on body -->
+      <line x1="-22" y1="-2" x2="-26" y2="-2" stroke="rgba(255,180,120,0.8)" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="22"  y1="-2" x2="26"  y2="-2" stroke="rgba(255,180,120,0.8)" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="-22" y1="4"  x2="-28" y2="4"  stroke="rgba(255,180,120,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="22"  y1="4"  x2="28"  y2="4"  stroke="rgba(255,180,120,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <text x="990" y="375" fill="#ffb060" font-size="16" font-weight="bold" letter-spacing="2">SCARED</text>
+    <text x="990" y="394" fill="rgba(255,176,96,0.75)" font-size="10">mood: scared · orange</text>
+    <text x="990" y="410" fill="rgba(255,255,255,0.45)" font-size="9">body shrinks &amp; cowers,</text>
+    <text x="990" y="423" fill="rgba(255,255,255,0.45)" font-size="9">wide eyes, tiny quivering O,</text>
+    <text x="990" y="436" fill="rgba(255,255,255,0.45)" font-size="9">tentacles pulled in, tremble</text>
+    <text x="990" y="459" fill="rgba(255,144,48,0.85)" font-size="10" font-weight="bold">TRIGGER</text>
+    <text x="990" y="473" fill="rgba(255,176,96,0.85)" font-size="9">micLevel &gt; 0.35 sustained ≥3 frames</text>
+    <text x="990" y="485" fill="rgba(255,176,96,0.6)" font-size="9" font-style="italic">recover: mic&lt;0.2 &amp;&amp; timer&gt;45 → aware</text>
+  </g>
 
-  <!-- SCARED -->
-  <ellipse cx="860" cy="360" rx="110" ry="32" fill="rgba(255,144,48,0.15)" stroke="#ff9030" stroke-width="2"/>
-  <text x="860" y="358" fill="#ffb060" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">SCARED</text>
-  <text x="860" y="374" fill="rgba(255,176,96,0.55)" font-size="9" text-anchor="middle">orange · cower · wide eyes</text>
+  <!-- ANGRY card =========================================================== -->
+  <g>
+    <rect x="830" y="520" width="320" height="150" rx="10" fill="rgba(255,64,64,0.12)" stroke="#ff4040" stroke-width="1.8"/>
+    <g transform="translate(895,595)">
+      <circle cx="0" cy="0" r="46" fill="url(#glow-angry)" opacity="0.55"/>
+      <!-- sharp outward tentacles -->
+      <line x1="-22" y1="4"  x2="-32" y2="16" stroke="#f88" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-12" y1="13" x2="-16" y2="28" stroke="#f88" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-3"  y1="16" x2="-4"  y2="30" stroke="#f88" stroke-width="2" stroke-linecap="round"/>
+      <line x1="3"   y1="16" x2="4"   y2="30" stroke="#f88" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12"  y1="13" x2="16"  y2="28" stroke="#f88" stroke-width="2" stroke-linecap="round"/>
+      <line x1="22"  y1="4"  x2="32"  y2="16" stroke="#f88" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="0" cy="0" rx="23" ry="20" fill="#c11" opacity="0.82"/>
+      <ellipse cx="0" cy="0" rx="13" ry="11" fill="#fcc" opacity="0.55"/>
+      <!-- angry eyebrows (diagonal slashes) -->
+      <line x1="-12" y1="-10" x2="-4" y2="-6" stroke="#f66" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="12"  y1="-10" x2="4"  y2="-6" stroke="#f66" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- angry eyes (slitted) -->
+      <ellipse cx="-7" cy="-2" rx="3" ry="2" fill="#fff"/>
+      <ellipse cx="7"  cy="-2" rx="3" ry="2" fill="#fff"/>
+      <circle cx="-7" cy="-2" r="1.2" fill="#200"/>
+      <circle cx="7"  cy="-2" r="1.2" fill="#200"/>
+      <!-- frown with teeth -->
+      <path d="M -8,8 q 8,-6 16,0" stroke="#600" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <line x1="-6" y1="4" x2="6" y2="4" stroke="#600" stroke-width="1" stroke-linecap="round"/>
+    </g>
+    <text x="990" y="555" fill="#ff7070" font-size="16" font-weight="bold" letter-spacing="2">ANGRY</text>
+    <text x="990" y="574" fill="rgba(255,112,112,0.75)" font-size="10">mood: angry · red</text>
+    <text x="990" y="590" fill="rgba(255,255,255,0.45)" font-size="9">diagonal brows, gritted frown,</text>
+    <text x="990" y="603" fill="rgba(255,255,255,0.45)" font-size="9">sharp tentacles, body jitter,</text>
+    <text x="990" y="616" fill="rgba(255,255,255,0.45)" font-size="9">red-tinted background</text>
+    <text x="990" y="639" fill="rgba(255,64,64,0.85)" font-size="10" font-weight="bold">TRIGGER</text>
+    <text x="990" y="653" fill="rgba(255,112,112,0.85)" font-size="9">camera covered (dark or uniform)</text>
+    <text x="990" y="665" fill="rgba(255,112,112,0.6)" font-size="9" font-style="italic">recover: !covered &amp;&amp; timer&gt;60 → aware</text>
+  </g>
 
-  <!-- ANGRY -->
-  <ellipse cx="860" cy="490" rx="110" ry="32" fill="rgba(255,64,64,0.15)" stroke="#ff4040" stroke-width="2"/>
-  <text x="860" y="488" fill="#ff7070" font-size="13" text-anchor="middle" font-weight="bold" letter-spacing="2">ANGRY</text>
-  <text x="860" y="504" fill="rgba(255,112,112,0.55)" font-size="9" text-anchor="middle">red · eyebrows · frown · jitter</text>
+  <!-- Arrows from hub into each override -->
+  <path d="M 760 495 Q 800 380 830 240" fill="none" stroke="#ffd040" stroke-width="1.8" marker-end="url(#ar-yel)"/>
+  <text x="770" y="385" fill="#ffd040" font-size="10" font-weight="bold">shake</text>
 
-  <!-- "From any state" hub -->
-  <rect x="610" y="340" width="92" height="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,220,180,0.4)" stroke-width="1.2" rx="6" stroke-dasharray="3,3"/>
-  <text x="656" y="356" fill="rgba(255,220,180,0.9)" font-size="10" text-anchor="middle" font-weight="bold">ANY</text>
-  <text x="656" y="370" fill="rgba(255,220,180,0.7)" font-size="9" text-anchor="middle">CORE STATE</text>
+  <line x1="760" y1="512" x2="828" y2="415" stroke="#ff9030" stroke-width="1.8" marker-end="url(#ar-org)"/>
+  <text x="780" y="460" fill="#ff9030" font-size="10" font-weight="bold">loud mic</text>
 
-  <!-- Arrows: hub → DIZZY -->
-  <path d="M 700 348 Q 770 290 760 232" fill="none" stroke="#ffd040" stroke-width="1.6" marker-end="url(#arrow-yellow)"/>
-  <text x="720" y="270" fill="#ffd040" font-size="9">shake &gt; 18</text>
-  <text x="720" y="282" fill="#ffd040" font-size="9">(devicemotion)</text>
+  <path d="M 760 525 Q 800 580 830 595" fill="none" stroke="#ff4040" stroke-width="1.8" marker-end="url(#ar-red)"/>
+  <text x="770" y="570" fill="#ff7070" font-size="10" font-weight="bold">cover cam</text>
 
-  <!-- Arrows: hub → SCARED -->
-  <line x1="702" y1="360" x2="750" y2="360" stroke="#ff9030" stroke-width="1.6" marker-end="url(#arrow-orange)"/>
-  <text x="710" y="354" fill="#ff9030" font-size="9">mic &gt; 0.35 sustained</text>
+  <!-- Recovery arrows back to AWARE (dashed, curving above) -->
+  <path d="M 895 190 Q 600 80 400 345" fill="none" stroke="rgba(255,208,64,0.35)" stroke-width="1" stroke-dasharray="4,3"/>
+  <path d="M 895 370 Q 600 260 400 365" fill="none" stroke="rgba(255,144,48,0.35)" stroke-width="1" stroke-dasharray="4,3"/>
+  <path d="M 895 550 Q 600 480 420 385" fill="none" stroke="rgba(255,64,64,0.3)"  stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="550" y="75" fill="rgba(255,200,140,0.6)" font-size="9" font-style="italic">all overrides recover → AWARE</text>
 
-  <!-- Arrows: hub → ANGRY -->
-  <path d="M 700 372 Q 770 430 760 488" fill="none" stroke="#ff4040" stroke-width="1.6" marker-end="url(#arrow-red)"/>
-  <text x="720" y="440" fill="#ff7070" font-size="9">camera covered</text>
-  <text x="720" y="452" fill="#ff7070" font-size="9">(dark + uniform)</text>
-
-  <!-- Recovery arrows: reactive → AWARE (long dashed back to left column) -->
-  <!-- DIZZY → AWARE -->
-  <path d="M 750 230 Q 480 180 377 272" fill="none" stroke="rgba(255,208,64,0.5)" stroke-width="1.2" marker-end="url(#arrow-yellow-dim)" stroke-dasharray="5,3"/>
-  <text x="505" y="195" fill="rgba(255,224,128,0.7)" font-size="8">shake &lt; 4 &amp;&amp; timer &gt; 90 → aware</text>
-
-  <!-- SCARED → AWARE -->
-  <path d="M 750 360 Q 560 340 377 288" fill="none" stroke="rgba(255,144,48,0.5)" stroke-width="1.2" marker-end="url(#arrow-orange-dim)" stroke-dasharray="5,3"/>
-  <text x="500" y="325" fill="rgba(255,176,96,0.7)" font-size="8">mic &lt; 0.2 &amp;&amp; timer &gt; 45 → aware</text>
-
-  <!-- ANGRY → AWARE -->
-  <path d="M 750 490 Q 480 440 377 296" fill="none" stroke="rgba(255,64,64,0.5)" stroke-width="1.2" marker-end="url(#arrow-red-dim)" stroke-dasharray="5,3"/>
-  <text x="500" y="465" fill="rgba(255,112,112,0.7)" font-size="8">!covered &amp;&amp; timer &gt; 60 → aware</text>
-
-  <!-- ============ INPUT LEGEND ============ -->
-  <rect x="40" y="730" width="1040" height="130" fill="rgba(255,255,255,0.03)" stroke="rgba(127,255,255,0.15)" stroke-width="1" rx="8"/>
+  <!-- =============================================================== -->
+  <!-- LEGEND                                                          -->
+  <!-- =============================================================== -->
+  <rect x="40" y="910" width="1200" height="190" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(127,255,255,0.15)" stroke-width="1"/>
 
   <!-- Properties -->
-  <text x="60" y="752" fill="rgba(127,255,255,0.85)" font-size="11" font-weight="bold" letter-spacing="2">PROPERTIES</text>
-  <text x="60" y="772" fill="rgba(255,255,255,0.6)" font-size="9">energy (0–100) → glow, pulse speed, eye size</text>
-  <text x="60" y="788" fill="rgba(255,255,255,0.6)" font-size="9">alertness (0–100) → body size, tentacles, eye spread</text>
-  <text x="60" y="804" fill="rgba(255,255,255,0.6)" font-size="9">mood → color palette (8 states)</text>
-  <text x="60" y="820" fill="rgba(255,255,255,0.6)" font-size="9">stateTimer → frames in current state</text>
-  <text x="60" y="836" fill="rgba(255,255,255,0.6)" font-size="9">loudFrames / camCoverFrames → debounce counters</text>
+  <text x="70" y="938" fill="rgba(127,255,255,0.9)" font-size="12" font-weight="bold" letter-spacing="3">PROPERTIES</text>
+  <text x="70" y="960" fill="rgba(255,255,255,0.65)" font-size="10">energy (0–100) → glow, pulse speed, eye size</text>
+  <text x="70" y="976" fill="rgba(255,255,255,0.65)" font-size="10">alertness (0–100) → body size, tentacles, eye spread</text>
+  <text x="70" y="992" fill="rgba(255,255,255,0.65)" font-size="10">mood → color palette (8 labels)</text>
+  <text x="70" y="1008" fill="rgba(255,255,255,0.65)" font-size="10">stateTimer → frames in current state</text>
+  <text x="70" y="1024" fill="rgba(255,255,255,0.65)" font-size="10">loudFrames / camCoverFrames / shakeIntensity → debounce</text>
 
   <!-- Inputs -->
-  <text x="410" y="752" fill="rgba(127,255,255,0.85)" font-size="11" font-weight="bold" letter-spacing="2">INPUTS</text>
-  <text x="410" y="772" fill="rgba(255,255,255,0.6)" font-size="9">mic (RMS on time-domain × 3.5) → energy, alertness, SCARED</text>
-  <text x="410" y="788" fill="rgba(255,255,255,0.6)" font-size="9">deviceorientation (tilt) → alertness, pupil offset</text>
-  <text x="410" y="804" fill="rgba(255,255,255,0.6)" font-size="9">devicemotion (Δ accel) → shake intensity → DIZZY</text>
-  <text x="410" y="820" fill="rgba(255,255,255,0.6)" font-size="9">camera (brightness + variance) → ANGRY</text>
-  <text x="410" y="836" fill="rgba(255,255,255,0.6)" font-size="9">touch / buttons (Feed · Calm · Play) → direct</text>
+  <text x="470" y="938" fill="rgba(127,255,255,0.9)" font-size="12" font-weight="bold" letter-spacing="3">INPUTS</text>
+  <text x="470" y="960" fill="rgba(255,255,255,0.65)" font-size="10">🎤 microphone (RMS × 3.5) → energy, alertness, SCARED</text>
+  <text x="470" y="976" fill="rgba(255,255,255,0.65)" font-size="10">📱 orientation (tilt) → alertness, pupil offset</text>
+  <text x="470" y="992" fill="rgba(255,255,255,0.65)" font-size="10">💥 devicemotion (Δ accel) → shake → DIZZY</text>
+  <text x="470" y="1008" fill="rgba(255,255,255,0.65)" font-size="10">📷 camera (brightness + variance) → ANGRY</text>
+  <text x="470" y="1024" fill="rgba(255,255,255,0.65)" font-size="10">👆 touch · Feed / Calm / Play buttons → direct</text>
 
-  <!-- Triggers summary -->
-  <text x="780" y="752" fill="rgba(255,180,120,0.85)" font-size="11" font-weight="bold" letter-spacing="2">OVERRIDE TRIGGERS</text>
-  <text x="780" y="772" fill="rgba(255,208,64,0.75)" font-size="9">DIZZY ← shake &gt; 18 (device or mouse)</text>
-  <text x="780" y="788" fill="rgba(255,144,48,0.75)" font-size="9">SCARED ← mic &gt; 0.35 for ≥ 3 sample frames</text>
-  <text x="780" y="804" fill="rgba(255,64,64,0.75)" font-size="9">ANGRY ← brightness &lt; 0.18 OR (&lt; 0.35 &amp;&amp; var &lt; 0.06)</text>
-  <text x="780" y="820" fill="rgba(255,255,255,0.5)" font-size="9">Each override blocks lower-priority overrides</text>
-  <text x="780" y="836" fill="rgba(255,255,255,0.5)" font-size="9">All overrides recover → AWARE on release + timer</text>
+  <!-- Priority / triggers -->
+  <text x="870" y="938" fill="rgba(255,180,120,0.9)" font-size="12" font-weight="bold" letter-spacing="3">OVERRIDE PRIORITY</text>
+  <text x="870" y="960" fill="rgba(255,208,64,0.85)" font-size="10">1. DIZZY — beats everything (even angry)</text>
+  <text x="870" y="976" fill="rgba(255,144,48,0.85)" font-size="10">2. SCARED — beats angry</text>
+  <text x="870" y="992" fill="rgba(255,64,64,0.85)" font-size="10">3. ANGRY — beats normal progression</text>
+  <text x="870" y="1008" fill="rgba(255,255,255,0.55)" font-size="10">4. normal core progression otherwise</text>
+  <text x="870" y="1024" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">each override blocks lower ones until recovered</text>
+
+  <text x="70" y="1056" fill="rgba(127,255,255,0.55)" font-size="9" font-style="italic">solid arrow = trigger / forward    dashed arrow = decay / recovery    →  AWARE is the recovery target for all overrides</text>
 </svg>
